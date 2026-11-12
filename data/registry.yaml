@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2026 AURIS simulator contributors
+# SPDX-License-Identifier: CC0-1.0
+#
+# Registry of EXTERNAL datasets used by the simulator.
+# Data files never go into this Git repository (size, GDPR, ethics): only their
+# references. See docs/design.md, section 3.
+#
+# Fields:
+#   id                unique identifier (used in case files)
+#   title             short title
+#   producer          partner that produced the dataset            (TODO per dataset)
+#   access            open | restricted | controlled
+#   licence           SPDX identifier, e.g. CC-BY-4.0, or "DUA" for a data use agreement
+#   doi, version      persistent identifier and version
+#   url, sha256       direct download link and checksum (required when access is open)
+#   access_procedure  how to request access (restricted / controlled datasets)
+#   tags              free keywords (oct, us, ct, mesh, protocol, digital-twin, ...)
+#
+# Example (commented out, not a real dataset):
+#   - id: example-phantom-meshes
+#     title: Example phantom meshes
+#     producer: TODO
+#     access: open
+#     licence: CC-BY-4.0
+#     doi: 10.5281/zenodo.TODO
+#     version: "1.0"
+#     url: https://zenodo.org/records/TODO/files/meshes.zip
+#     sha256: TODO
+#     tags: [mesh, phantom]
+
+datasets: []

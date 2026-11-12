@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2026 AURIS simulator contributors
+# SPDX-License-Identifier: CC0-1.0
+#
+# TODO before the first release:
+#   - add the other authors (DC15, supervisors, contributors) and ORCIDs;
+#   - add the Zenodo concept DOI (identifiers) after the first release;
+#   - add the grant agreement number.
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+type: software
+title: "AURIS simulator: open hybrid ear-surgery simulator"
+abstract: >-
+  Open hybrid ear-surgery simulator (DC15) of the AURIS Marie Skłodowska-Curie
+  Doctoral Network (Advanced Ultra-precise Robotic Inner-ear Surgery), built on
+  the SOFA framework, for testing and comparing robotic instruments and
+  cochlear-implantation strategies.
+authors:
+  - family-names: Adagolodjo
+    given-names: Yinoussa
+    affiliation: "Inria, Université de Lille (DEFROST)"
+    # orcid: "https://orcid.org/TODO"
+version: 0.1.0
+license: LGPL-2.1-or-later
+repository-code: "https://github.com/eu-auris/auris-simulator"
+keywords:
+  - SOFA
+  - surgical simulation
+  - cochlear implant
+  - inner-ear surgery
+  - medical robotics
+  - digital twin

@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2026 AURIS simulator contributors
+# SPDX-License-Identifier: CC-BY-4.0
+site_name: AURIS simulator
+site_description: Open hybrid ear-surgery simulator (DC15) of the AURIS MSCA Doctoral Network
+site_url: https://eu-auris.github.io/auris-simulator/
+repo_url: https://github.com/eu-auris/auris-simulator
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: {icon: material/brightness-7, name: Dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: {icon: material/brightness-4, name: Light mode}
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Tutorials: tutorials.md
+  - Reference:
+      - Case file format: reference/case-format.md
+      - Python API: reference/api.md
+  - Design note: design.md
+  - Citing: citing.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [python]
+          options:
+            show_source: false
+            docstring_style: sphinx
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true

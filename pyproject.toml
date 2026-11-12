@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2026 AURIS simulator contributors
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auris-sim"
+version = "0.1.0"
+description = "AURIS hybrid ear-surgery simulator (DC15): SOFA scenes, metrics and benchmarks for robotic cochlear implantation."
+readme = "README.md"
+license = "LGPL-2.1-or-later"
+license-files = ["LICENSE", "LICENSES/*.txt"]
+requires-python = ">=3.10"
+authors = [
+    { name = "Yinoussa Adagolodjo" },
+    # TODO: add the other contributors (DC15, DC14, supervisors) once confirmed.
+]
+keywords = ["SOFA", "surgical simulation", "cochlear implant", "robotics", "inner ear"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+# Only light, pure-Python dependencies: everything except auris_sim.scene works without SOFA.
+dependencies = [
+    "numpy>=1.24",
+    "pyyaml>=6.0",
+    "jsonschema>=4.18",
+]
+
+[project.optional-dependencies]
+data = ["pooch>=1.8"]
+dev = ["pytest>=8", "ruff>=0.6", "reuse[charset-normalizer]>=4"]
+docs = ["mkdocs-material>=9.5", "mkdocstrings[python]>=0.26"]
+
+[project.urls]
+Repository = "https://github.com/eu-auris/auris-simulator"
+Documentation = "https://eu-auris.github.io/auris-simulator"
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[tool.setuptools.package-data]
+auris_sim = ["schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["sofa: needs SOFA, SofaPython3 and BeamAdapter (skipped otherwise)"]
+
+[tool.ruff]
+line-length = 100
+src = ["python", "tests", "scenes"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "NPY"]
