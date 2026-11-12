@@ -1,0 +1,12 @@
+version = 1
+
+# Files that cannot carry an SPDX header comment.
+[[annotations]]
+path = ["python/auris_sim/schemas/*.json"]
+SPDX-FileCopyrightText = "2026 AURIS simulator contributors"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = ["LICENSE"]
+SPDX-FileCopyrightText = "1991, 1999 Free Software Foundation, Inc."
+SPDX-License-Identifier = "LGPL-2.1-or-later"

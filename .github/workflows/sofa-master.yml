@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2026 AURIS simulator contributors
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# Non-blocking: weekly build against SOFA master, to detect API changes early.
+# It is a separate workflow, so its failures never block pull requests.
+name: SOFA master (weekly)
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"  # Mondays 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sofa-master:
+    uses: ./.github/workflows/sofa-build.yml
+    with:
+      sofa_version: master
+      beamadapter_ref: master

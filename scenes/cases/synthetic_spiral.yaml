@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: 2026 AURIS simulator contributors
+# SPDX-License-Identifier: CC-BY-4.0
+#
+# Example case: straight electrode array inserted into a synthetic spiral duct.
+# ALL NUMERICAL VALUES ARE ILLUSTRATIVE PLACEHOLDERS, not anatomical or device data.
+schema_version: "0.1"
+description: Teaching example on a synthetic cochlea-like duct (not anatomical).
+units: {length: m, mass: kg, time: s, force: N, pressure: Pa}
+
+anatomy:
+  id: synthetic-spiral-001
+  frame: synthetic_spiral
+  source:
+    type: synthetic
+    generator: spiral_duct
+    parameters:          # see auris_sim.geometry.SpiralDuct
+      turns: 2.5
+      spiral_radius_base: 4.0e-3
+      spiral_radius_apex: 1.0e-3
+      height: 3.0e-3
+      duct_radius_base: 0.9e-3
+      duct_radius_apex: 0.5e-3
+
+instrument:
+  type: electrode_array
+  model: beam            # BeamAdapter
+  length: 0.025
+  diameter: {base: 0.8e-3, tip: 0.4e-3}
+  tip_fraction: 0.3
+  young_modulus: 1.0e7
+  poisson_ratio: 0.45
+  density: 1500
+  n_beams: 30
+
+strategy:
+  insertion_speed: 1.0e-3   # m/s
+  insertion_depth: 0.020    # m
+
+contact:
+  friction: 0.1
+  alarm_distance: 3.0e-4
+  contact_distance: 5.0e-5
+
+simulation:
+  dt: 0.01
+  duration: 25.0
+  gravity: [0, 0, 0]
+
+outputs: [tip_trajectory, inserted_length, metrics]

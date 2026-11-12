@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 AURIS simulator contributors
+# SPDX-License-Identifier: CC0-1.0
+
+# Build
+/build*/
+/install/
+*.egg-info/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Docs
+/site/
+
+# Simulation outputs and local data (data never goes into Git, see data/registry.yaml)
+/results/
+/data/*
+!/data/registry.yaml
+*.stl.cache
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
