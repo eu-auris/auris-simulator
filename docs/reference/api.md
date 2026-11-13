@@ -9,7 +9,11 @@ SPDX-License-Identifier: CC-BY-4.0
 
 ::: auris_sim.units
 
+::: auris_sim.anatomy
+
 ::: auris_sim.geometry.spiral
+
+::: auris_sim.geometry.mesh
 
 ::: auris_sim.metrics.insertion
 

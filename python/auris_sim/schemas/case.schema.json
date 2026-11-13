@@ -99,14 +99,80 @@
                 },
                 "meshes": {
                   "type": "object",
-                  "minProperties": 1,
+                  "required": [
+                    "collision"
+                  ],
+                  "properties": {
+                    "collision": {
+                      "$ref": "#/$defs/fileRef",
+                      "description": "Surface of the lumen used for contacts (coarse)."
+                    },
+                    "display": {
+                      "$ref": "#/$defs/fileRef",
+                      "description": "Finer surface for display only (optional)."
+                    }
+                  },
                   "additionalProperties": {
                     "$ref": "#/$defs/fileRef"
                   }
+                },
+                "entrance": {
+                  "type": "object",
+                  "description": "Override of the entrance detection, in the anatomy frame (m): the centre (and normal, pointing into the cochlea) of the entrance.",
+                  "required": [
+                    "centre"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "centre": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 3,
+                      "maxItems": 3
+                    },
+                    "normal": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 3,
+                      "maxItems": 3
+                    }
+                  }
                 }
-              }
+              },
+              "description": "Meshes read from files. The entrance is the planar open loop of the collision mesh (or the one given in 'entrance'); the other open loops are closed."
             }
           ]
+        },
+        "modiolar_axis": {
+          "type": "object",
+          "description": "Spiral (modiolar) axis in the anatomy frame (m), used for the angular insertion depth. Default: the z axis for the synthetic duct; estimated from the mesh for files.",
+          "required": [
+            "origin",
+            "direction"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "origin": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "direction": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          }
         }
       }
     },
@@ -211,6 +277,13 @@
           "minimum": 0,
           "default": 0.0003,
           "description": "Distance between the tip of the instrument and the duct entrance at the start (m)."
+        },
+        "insertion_angle_deg": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "default": 0,
+          "description": "Insertion angle (degrees): rotation of the anatomy about the spiral axis through the entrance, counter-clockwise seen from +z of the insertion frame."
         }
       }
     },
@@ -309,7 +382,7 @@
       "properties": {
         "file": {
           "type": "string",
-          "description": "Path relative to the case file, or a URL."
+          "description": "Path relative to the case file, or absolute; '~' and environment variables such as ${AURIS_DATA} are expanded."
         },
         "doi": {
           "type": "string"
@@ -325,7 +398,16 @@
           },
           "minItems": 16,
           "maxItems": 16,
-          "description": "Row-major 4x4 rigid transform from the file frame to the anatomy frame."
+          "description": "Row-major 4x4 rigid transform from the file frame (after the unit scaling, so in m) to the anatomy frame."
+        },
+        "unit": {
+          "enum": [
+            "m",
+            "mm",
+            "um"
+          ],
+          "default": "m",
+          "description": "Length unit of the file (mesh files carry no unit)."
         }
       }
     }

@@ -17,7 +17,13 @@ cochlear-implantation strategies, for research and training.
 > skeleton, a synthetic example scene and the exchange formats (drafts). See the
 > [design note](docs/design.md) for the scope and the roadmap.
 
-<!-- TODO badges: CI, docs, Zenodo DOI, Software Heritage (once the first workflows and release have run). -->
+[![CI](https://github.com/eu-auris/auris-simulator/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/eu-auris/auris-simulator/actions/workflows/ci.yml)
+[![Docs](https://github.com/eu-auris/auris-simulator/actions/workflows/docs.yml/badge.svg?branch=main)](https://eu-auris.github.io/auris-simulator/)
+[![Licence: LGPL-2.1-or-later](https://img.shields.io/badge/licence-LGPL--2.1--or--later-blue.svg)](LICENSE)
+
+<!-- TODO badges after the first release: Zenodo DOI, Software Heritage. -->
+
+Documentation: <https://eu-auris.github.io/auris-simulator/>
 
 ## Contents
 

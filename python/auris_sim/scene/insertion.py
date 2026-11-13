@@ -18,7 +18,11 @@ Frames:
 - *insertion frame* (scene): the rod is built along +x from the origin, the
   entrance of the duct is centred on the +x axis and faces -x;
 - *anatomy frame*: the frame of the case file (for the synthetic duct, the spiral
-  winds around +z). Recorded trajectories are given back in the anatomy frame.
+  winds around +z; for meshes read from files, the file frame after the optional
+  transform). Recorded trajectories are given back in the anatomy frame.
+
+The placement of the anatomy (entrance detection, insertion angle, closing of the
+other open loops) is done by :func:`auris_sim.anatomy.build_anatomy`.
 
 Units: the scene runs in (mm, kg, s), i.e. forces in mN and moduli in kPa
 (:data:`auris_sim.units.MM_KG_S`); case files and results are in SI.
@@ -34,7 +38,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from auris_sim.geometry import SpiralDuct, insertion_frame, spiral_duct
+from auris_sim.anatomy import Anatomy, build_anatomy
 from auris_sim.io import Case
 from auris_sim.metrics import angular_insertion_depth, insertion_work, mean_force, peak_force
 from auris_sim.units import MM_KG_S, UnitSystem
@@ -172,7 +176,10 @@ class GuidedInsertion(_Controller):
 class InsertionMonitor(_Controller):
     """Records insertion depth, tip trajectory and insertion force; computes the metrics."""
 
-    def __init__(self, *, insertion, frames_mo, obstacle_mo, entry_offset, to_anatomy, units, **kw):
+    def __init__(
+        self, *, insertion, frames_mo, obstacle_mo, entry_offset, to_anatomy, units,
+        axis_origin=(0.0, 0.0, 0.0), axis_direction=(0.0, 0.0, 1.0), **kw,
+    ):  # fmt: skip
         if Sofa:
             Sofa.Core.Controller.__init__(self, **kw)
         self.ins, self.frames_mo, self.obstacle_mo = insertion, frames_mo, obstacle_mo
@@ -180,6 +187,9 @@ class InsertionMonitor(_Controller):
         # callable: (n, 3) scene points -> anatomy frame (scene units)
         self.to_anatomy = to_anatomy
         self.units = units
+        # spiral axis for the angular insertion depth, anatomy frame, SI
+        self.axis_origin = np.asarray(axis_origin, dtype=float)
+        self.axis_direction = np.asarray(axis_direction, dtype=float)
         self.time: list[float] = []
         self.depth: list[float] = []
         self.force: list[float] = []
@@ -211,10 +221,13 @@ class InsertionMonitor(_Controller):
             return {}
         tip = np.column_stack([ts["tip_x_m"], ts["tip_y_m"], ts["tip_z_m"]])
         inside = ts["insertion_depth_m"] > 0.0
+        angle = None
+        if len(tip) > 1:
+            angle = angular_insertion_depth(tip, self.axis_direction, self.axis_origin)
         force, depth = ts["insertion_force_n"][inside], ts["insertion_depth_m"][inside]
         return {
             "final_insertion_depth_m": float(ts["insertion_depth_m"][-1]),
-            "angular_insertion_depth_deg": angular_insertion_depth(tip) if len(tip) > 1 else None,
+            "angular_insertion_depth_deg": angle,
             "peak_insertion_force_n": peak_force(force) if len(force) else None,
             "mean_insertion_force_n": mean_force(force) if len(force) else None,
             "insertion_work_j": insertion_work(np.abs(force), depth) if len(force) > 1 else None,
@@ -265,30 +278,36 @@ def _add_rod(parent, profile: RodProfile, rayleigh_stiffness: float):
     return frames, frames_mo, clamp, strain_mo
 
 
-def _add_obstacle(parent, vertices, triangles, gui: bool):
+def _add_obstacle(parent, collision, display, gui: bool):
+    """Rigid, non-simulated anatomy; ``collision`` / ``display`` are (vertices, triangles)."""
+    vertices, triangles = collision
     node = parent.addChild("Anatomy")
     node.addObject("MeshTopology", name="topology", position=vertices, triangles=triangles)
     mo = node.addObject("MechanicalObject", name="dofs", template="Vec3d", position=vertices)
     node.addObject("TriangleCollisionModel", moving=False, simulated=False)
     if gui:
+        vis_vertices, vis_triangles = display or collision
         visual = node.addChild("Visual")
         visual.addObject(
-            "OglModel", name="surface", position=vertices, triangles=triangles,
+            "OglModel", name="surface", position=vis_vertices, triangles=vis_triangles,
             color=[0.9, 0.7, 0.6, 0.35],
         )  # fmt: skip
     return mo
 
 
-def create_insertion_scene(root, case: Case, units: UnitSystem = MM_KG_S, gui: bool = True):
+def create_insertion_scene(
+    root, case: Case, units: UnitSystem = MM_KG_S, gui: bool = True,
+    anatomy: Anatomy | None = None,
+):  # fmt: skip
     """Fill ``root`` with the insertion scene described by ``case``.
 
+    ``anatomy`` may be passed when it was already built with
+    :func:`auris_sim.anatomy.build_anatomy` (it is built from ``case`` otherwise).
     Returns the :class:`InsertionMonitor`, which holds the recorded data.
     """
     if Sofa is None:
         raise ImportError("create_insertion_scene needs SOFA with SofaPython3 and Cosserat")
-    source = case["anatomy"]["source"]
-    if source["type"] != "synthetic":
-        raise NotImplementedError("only synthetic anatomies are supported in this version")
+    anatomy = anatomy or build_anatomy(case)
 
     instr, strat = case["instrument"], case["strategy"]
     contact, sim = case["contact"], case["simulation"]
@@ -296,16 +315,16 @@ def create_insertion_scene(root, case: Case, units: UnitSystem = MM_KG_S, gui: b
     entry_offset = units.length_to_scene(strat["entry_offset"])
     entrance_x = profile.length + entry_offset
 
-    # Anatomy, moved into the insertion frame: entrance centred at (entrance_x, 0, 0), facing -x.
-    params = SpiralDuct.from_dict(source.get("parameters"))
-    rotation, centre = insertion_frame(params)
-    centre_scene = units.length_to_scene(centre)
+    # Anatomy (insertion frame, SI) shifted so that the entrance is at (entrance_x, 0, 0).
     entrance = np.array([entrance_x, 0.0, 0.0])
-    mesh = spiral_duct(params)
-    verts = (units.length_to_scene(mesh.vertices) - centre_scene) @ rotation.T + entrance
+
+    def to_scene(mesh):
+        verts = units.length_to_scene(mesh.vertices) + entrance
+        return verts.tolist(), mesh.triangles.tolist()
 
     def to_anatomy(points: np.ndarray) -> np.ndarray:
-        return (points - entrance) @ rotation + centre_scene
+        si = anatomy.to_anatomy(units.length_to_si(points - entrance))
+        return units.length_to_scene(si)
 
     root.dt = units.time_to_scene(sim["dt"])
     root.gravity = units.length_to_scene(np.asarray(sim["gravity"], dtype=float)).tolist()
@@ -344,7 +363,8 @@ def create_insertion_scene(root, case: Case, units: UnitSystem = MM_KG_S, gui: b
         ODESolver="@../odesolver", wire_optimization=False,
     )  # fmt: skip
 
-    obstacle_mo = _add_obstacle(root, verts.tolist(), mesh.triangles.tolist(), gui)
+    display = to_scene(anatomy.display) if anatomy.display is not None else None
+    obstacle_mo = _add_obstacle(root, to_scene(anatomy.collision), display, gui)
 
     insertion = GuidedInsertion(
         frames_mo=frames_mo, clamp=clamp, abscissa=profile.abscissa,
@@ -354,8 +374,11 @@ def create_insertion_scene(root, case: Case, units: UnitSystem = MM_KG_S, gui: b
     )  # fmt: skip
     monitor = InsertionMonitor(
         insertion=insertion, frames_mo=frames_mo, obstacle_mo=obstacle_mo,
-        entry_offset=entry_offset, to_anatomy=to_anatomy, units=units, name="InsertionMonitor",
+        entry_offset=entry_offset, to_anatomy=to_anatomy, units=units,
+        axis_origin=anatomy.axis_origin, axis_direction=anatomy.axis_direction,
+        name="InsertionMonitor",
     )  # fmt: skip
+    monitor.anatomy = anatomy
     root.addObject(insertion)
     root.addObject(monitor)
     return monitor

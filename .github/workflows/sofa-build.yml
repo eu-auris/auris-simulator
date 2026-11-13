@@ -72,10 +72,11 @@ jobs:
         shell: bash
         env:
           PYTHON_EXE: ${{ steps.sofa.outputs.python_exe }}
+          AURIS_REQUIRE_SOFA: "1"  # a missing SOFA fails the tests instead of skipping them
         run: |
           export SOFA_PLUGIN_PATH="$GITHUB_WORKSPACE/deps/install/lib:$WORKSPACE_INSTALL_PATH/lib"
           export PYTHONPATH="$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages${PYTHONPATH:+:$PYTHONPATH}"
           "$PYTHON_EXE" -m pip install -e "$WORKSPACE_SRC_PATH[dev]"
           cd "$WORKSPACE_SRC_PATH"
           "$PYTHON_EXE" -c "import Sofa; print('SofaPython3 OK')"
-          "$PYTHON_EXE" -m pytest -m sofa -v
+          "$PYTHON_EXE" -m pytest -m sofa -v -rs
