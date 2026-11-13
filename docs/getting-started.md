@@ -48,7 +48,9 @@ runSofa scenes/electrode_insertion.py                       # with the GUI
 python scenes/electrode_insertion.py --headless --steps 500 # writes results/
 ```
 
-The scene inserts a straight electrode array into a synthetic spiral duct. Edit
+The scene inserts a straight electrode array into a synthetic spiral duct. To use a cochlea
+segmented from images, write a case file with an anatomy of type `files` (see the
+[case format](reference/case-format.md#anatomy-from-mesh-files)) and pass it with `--case`. Edit
 `scenes/cases/synthetic_spiral.yaml` (or pass `--case`) to change the instrument or the
 insertion strategy. Results are written as `metrics.json`, `timeseries.csv` and
 `manifest.json`.

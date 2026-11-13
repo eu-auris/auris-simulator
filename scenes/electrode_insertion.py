@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2026 AURIS simulator contributors
 # SPDX-License-Identifier: LGPL-2.1-or-later
-"""Example scene: electrode-array insertion into a synthetic spiral duct.
+"""Example scene: electrode-array insertion into a synthetic duct or a cochlea read from files.
 
 Needs SOFA (master, or v26.12 and later), SofaPython3 and the Cosserat plugin.
 
 With the GUI (needs ``pip install -e .`` in the Python used by SOFA)::
 
     runSofa scenes/electrode_insertion.py
+    AURIS_CASE=/path/to/my_case.yaml runSofa scenes/electrode_insertion.py
 
 Headless, writing results to ``results/``::
 
@@ -14,7 +15,8 @@ Headless, writing results to ``results/``::
     python scenes/electrode_insertion.py --headless --case my_case.yaml --steps 500
 
 The case file sets the anatomy, the instrument and the insertion strategy; see
-``scenes/cases/synthetic_spiral.yaml``.
+``scenes/cases/synthetic_spiral.yaml``, and ``docs/reference/case-format.md`` for
+a cochlea read from mesh files.
 """
 
 from __future__ import annotations
@@ -47,6 +49,7 @@ def run_headless(case_path: Path, steps: int | None, outdir: Path) -> Path:
     n = steps or int(round(case["simulation"]["duration"] / case["simulation"]["dt"]))
     for _ in range(n):
         Sofa.Simulation.animate(root, root.dt.value)
+    anatomy = monitor.anatomy
     run_dir = write_run(
         outdir / case["anatomy"]["id"],
         monitor.metrics(),
@@ -54,6 +57,8 @@ def run_headless(case_path: Path, steps: int | None, outdir: Path) -> Path:
         case_sha256=case.sha256(),
         case_file=str(case.path),
         steps=n,
+        anatomy_inputs=anatomy.inputs,  # files read, with their SHA-256
+        modiolar_axis_estimated=anatomy.axis_estimated,
     )
     print(f"results written to {run_dir}")
     return run_dir

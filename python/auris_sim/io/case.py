@@ -100,6 +100,21 @@ def _fill_defaults(instance: Any, schema: dict, root: dict) -> Any:
     return instance
 
 
+def _closest_branch(error) -> list:
+    """For a failed ``oneOf``, the errors of the alternative with the fewest errors.
+
+    E.g. a ``files`` anatomy source without ``collision`` is reported as a missing
+    ``collision`` rather than as "not valid under any of the given schemas".
+    """
+    if error.validator != "oneOf" or not error.context:
+        return [error]
+    branches: dict[int, list] = {}
+    for sub in error.context:
+        branches.setdefault(sub.relative_schema_path[0], []).append(sub)
+    best = min(branches.values(), key=len)
+    return [leaf for sub in best for leaf in _closest_branch(sub)]
+
+
 def validate_case(data: dict) -> dict:
     """Validate ``data`` and return a copy with defaults filled in.
 
@@ -107,9 +122,12 @@ def validate_case(data: dict) -> dict:
     """
     schema = case_schema()
     validator = jsonschema.Draft202012Validator(schema)
-    errors = sorted(validator.iter_errors(data), key=lambda e: list(e.path))
+    errors = [sub for e in validator.iter_errors(data) for sub in _closest_branch(e)]
+    errors.sort(key=lambda e: list(map(str, e.absolute_path)))
     if errors:
-        lines = [f"- {'/'.join(map(str, e.path)) or '<root>'}: {e.message}" for e in errors]
+        lines = [
+            f"- {'/'.join(map(str, e.absolute_path)) or '<root>'}: {e.message}" for e in errors
+        ]
         raise CaseError("invalid case:\n" + "\n".join(lines))
     data = _fill_defaults(copy.deepcopy(data), schema, schema)
     data.setdefault("contact", _fill_defaults({}, schema["properties"]["contact"], schema))

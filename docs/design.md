@@ -376,7 +376,7 @@ auris-simulator/
 ├── AurisSimulatorConfig.cmake.in
 ├── src/AurisSimulator/             # C++ components (config.h.in, init.cpp, components/)
 ├── python/auris_sim/               # Python package: scene builder, geometry, metrics, io, benchmark
-│   ├── geometry/                   #   synthetic geometries (spiral duct, …)
+│   ├── geometry/                   #   synthetic geometries (spiral duct, …), mesh files
 │   ├── scene/                      #   SofaPython3 scene builders
 │   ├── metrics/                    #   metric definitions (pure numpy, no SOFA)
 │   ├── io/                         #   case.yaml loading + schema validation
