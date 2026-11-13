@@ -33,8 +33,9 @@ cochlear-implantation strategies, for research and training.
 
 ## Requirements
 
-- SOFA **v26.06** (binaries from the [SOFA releases](https://github.com/sofa-framework/sofa/releases)
-  include SofaPython3), and the [BeamAdapter](https://github.com/sofa-framework/BeamAdapter) plugin.
+- SOFA **master** (until v26.12 is released) with SofaPython3, and the
+  [Cosserat](https://github.com/SofaDefrost/Cosserat) plugin from its `main` branch (the implant
+  model uses `Frames2StrainCosseratMapping`, which is not in Cosserat v26.06).
 - Python ≥ 3.10, the same Python as the one SOFA is built with.
 - [SoftRobots](https://github.com/SofaDefrost/SoftRobots) for robotic instruments (later versions).
 
@@ -54,7 +55,7 @@ cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH="$SOFA_ROOT/lib/cmake" -DCMAKE_
 cmake --build build
 ```
 
-Example scene (with SOFA, SofaPython3 and BeamAdapter loaded):
+Example scene (with SOFA, SofaPython3 and Cosserat available):
 
 ```bash
 runSofa scenes/electrode_insertion.py

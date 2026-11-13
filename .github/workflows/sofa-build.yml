@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 AURIS simulator contributors
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
-# Reusable workflow: install SOFA binaries, build BeamAdapter and the AurisSimulator
-# plugin, then run the scene smoke tests (pytest -m sofa).
+# Reusable workflow: install SOFA binaries, build the Cosserat plugin and the
+# AurisSimulator plugin, then run the scene tests (pytest -m sofa).
 name: SOFA build
 
 on:
@@ -12,8 +12,8 @@ on:
         description: "SOFA release tag (e.g. v26.06.00) or branch (master)"
         type: string
         required: true
-      beamadapter_ref:
-        description: "BeamAdapter commit, tag or branch"
+      cosserat_ref:
+        description: "SofaDefrost/Cosserat commit, tag or branch"
         type: string
         required: true
       os:
@@ -41,22 +41,23 @@ jobs:
         with:
           path: ${{ env.WORKSPACE_SRC_PATH }}
 
-      - name: Check out BeamAdapter
+      - name: Check out Cosserat
         uses: actions/checkout@v4
         with:
-          repository: sofa-framework/BeamAdapter
-          ref: ${{ inputs.beamadapter_ref }}
-          path: deps/BeamAdapter
+          repository: SofaDefrost/Cosserat
+          ref: ${{ inputs.cosserat_ref }}
+          path: deps/Cosserat
 
-      - name: Build BeamAdapter
+      - name: Build Cosserat
         shell: bash
         run: |
-          cmake -S deps/BeamAdapter -B deps/build-BeamAdapter -G Ninja \
+          cmake -S deps/Cosserat -B deps/build-Cosserat -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH="$SOFA_ROOT/lib/cmake" \
+            -DCMAKE_PREFIX_PATH="$SOFA_ROOT/lib/cmake;$SOFA_ROOT/plugins/SofaPython3/lib/cmake" \
             -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/deps/install" \
-            -DBEAMADAPTER_BUILD_TESTS=OFF
-          cmake --build deps/build-BeamAdapter --target install
+            -DCOSSERAT_BUILD_TESTS=OFF \
+            -DCOSSERAT_BUILD_EXAMPLES=OFF
+          cmake --build deps/build-Cosserat --target install
 
       - name: Build AurisSimulator plugin
         shell: bash
@@ -67,7 +68,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$WORKSPACE_INSTALL_PATH"
           cmake --build "$WORKSPACE_BUILD_PATH" --target install
 
-      - name: Scene smoke tests
+      - name: Scene tests
         shell: bash
         env:
           PYTHON_EXE: ${{ steps.sofa.outputs.python_exe }}

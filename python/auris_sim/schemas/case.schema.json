@@ -4,53 +4,105 @@
   "title": "AURIS simulation case",
   "description": "Exchange format between the digital twin (DC14) and the simulator (DC15). Draft 0.1: to be agreed with DC14. All quantities in SI units.",
   "type": "object",
-  "required": ["schema_version", "units", "anatomy", "instrument", "strategy", "simulation"],
+  "required": [
+    "schema_version",
+    "units",
+    "anatomy",
+    "instrument",
+    "strategy",
+    "simulation"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schema_version": {"const": "0.1"},
-    "description": {"type": "string"},
+    "schema_version": {
+      "const": "0.1"
+    },
+    "description": {
+      "type": "string"
+    },
     "units": {
       "type": "object",
       "description": "Exchange files are in SI units only (version 0.1).",
-      "required": ["length", "mass", "time", "force", "pressure"],
+      "required": [
+        "length",
+        "mass",
+        "time",
+        "force",
+        "pressure"
+      ],
       "additionalProperties": false,
       "properties": {
-        "length": {"const": "m"},
-        "mass": {"const": "kg"},
-        "time": {"const": "s"},
-        "force": {"const": "N"},
-        "pressure": {"const": "Pa"}
+        "length": {
+          "const": "m"
+        },
+        "mass": {
+          "const": "kg"
+        },
+        "time": {
+          "const": "s"
+        },
+        "force": {
+          "const": "N"
+        },
+        "pressure": {
+          "const": "Pa"
+        }
       }
     },
     "anatomy": {
       "type": "object",
-      "required": ["id", "source"],
+      "required": [
+        "id",
+        "source"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": {"type": "string", "minLength": 1},
-        "frame": {"type": "string", "default": "synthetic_spiral"},
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "frame": {
+          "type": "string",
+          "default": "synthetic_spiral"
+        },
         "source": {
           "oneOf": [
             {
               "type": "object",
-              "required": ["type", "generator"],
+              "required": [
+                "type",
+                "generator"
+              ],
               "additionalProperties": false,
               "properties": {
-                "type": {"const": "synthetic"},
-                "generator": {"const": "spiral_duct"},
-                "parameters": {"type": "object"}
+                "type": {
+                  "const": "synthetic"
+                },
+                "generator": {
+                  "const": "spiral_duct"
+                },
+                "parameters": {
+                  "type": "object"
+                }
               }
             },
             {
               "type": "object",
-              "required": ["type", "meshes"],
+              "required": [
+                "type",
+                "meshes"
+              ],
               "additionalProperties": false,
               "properties": {
-                "type": {"const": "files"},
+                "type": {
+                  "const": "files"
+                },
                 "meshes": {
                   "type": "object",
                   "minProperties": 1,
-                  "additionalProperties": {"$ref": "#/$defs/fileRef"}
+                  "additionalProperties": {
+                    "$ref": "#/$defs/fileRef"
+                  }
                 }
               }
             }
@@ -60,76 +112,219 @@
     },
     "instrument": {
       "type": "object",
-      "required": ["type", "model", "length", "diameter", "young_modulus"],
+      "description": "Instrument modelled as a Cosserat rod (Cosserat plugin, Frames2Strain). Either n_sections uniform sections, or an explicit list of sections whose lengths add up to 'length'.",
+      "required": [
+        "type",
+        "model",
+        "length",
+        "radius",
+        "young_modulus"
+      ],
       "additionalProperties": false,
       "properties": {
-        "type": {"enum": ["electrode_array"]},
-        "model": {"enum": ["beam"]},
-        "length": {"type": "number", "exclusiveMinimum": 0},
-        "diameter": {
-          "type": "object",
-          "required": ["base", "tip"],
-          "additionalProperties": false,
-          "properties": {
-            "base": {"type": "number", "exclusiveMinimum": 0},
-            "tip": {"type": "number", "exclusiveMinimum": 0}
-          }
+        "type": {
+          "enum": [
+            "electrode_array"
+          ]
         },
-        "tip_fraction": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1, "default": 0.3},
-        "young_modulus": {"type": "number", "exclusiveMinimum": 0},
-        "poisson_ratio": {"type": "number", "minimum": 0, "exclusiveMaximum": 0.5, "default": 0.45},
-        "density": {"type": "number", "exclusiveMinimum": 0, "default": 1500},
-        "n_beams": {"type": "integer", "minimum": 2, "default": 30}
+        "model": {
+          "enum": [
+            "cosserat"
+          ]
+        },
+        "length": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "young_modulus": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "poisson_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 0.5,
+          "default": 0.45
+        },
+        "density": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1100
+        },
+        "n_sections": {
+          "type": "integer",
+          "minimum": 2,
+          "default": 40
+        },
+        "sections": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": [
+              "length",
+              "young_modulus"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "length": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "young_modulus": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "poisson_ratio": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMaximum": 0.5
+              }
+            }
+          }
+        }
       }
     },
     "strategy": {
       "type": "object",
-      "required": ["insertion_speed", "insertion_depth"],
+      "required": [
+        "insertion_speed",
+        "insertion_depth"
+      ],
       "additionalProperties": false,
       "properties": {
-        "insertion_speed": {"type": "number", "exclusiveMinimum": 0},
-        "insertion_depth": {"type": "number", "exclusiveMinimum": 0}
+        "insertion_speed": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "insertion_depth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Target depth of the tip beyond the entrance (m)."
+        },
+        "entry_offset": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.0003,
+          "description": "Distance between the tip of the instrument and the duct entrance at the start (m)."
+        }
       }
     },
     "contact": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "friction": {"type": "number", "minimum": 0, "default": 0.1},
-        "alarm_distance": {"type": "number", "exclusiveMinimum": 0, "default": 3e-4},
-        "contact_distance": {"type": "number", "exclusiveMinimum": 0, "default": 5e-5}
+        "friction": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.1
+        },
+        "alarm_distance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 0.0002
+        },
+        "contact_distance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 5e-05
+        }
       }
     },
     "simulation": {
       "type": "object",
-      "required": ["dt", "duration"],
+      "required": [
+        "dt",
+        "duration"
+      ],
       "additionalProperties": false,
       "properties": {
-        "dt": {"type": "number", "exclusiveMinimum": 0},
-        "duration": {"type": "number", "exclusiveMinimum": 0},
+        "dt": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "duration": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
         "gravity": {
-          "type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3,
-          "default": [0, 0, 0]
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "default": [
+            0,
+            0,
+            0
+          ]
+        },
+        "rayleigh_mass": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.5
+        },
+        "rayleigh_stiffness": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.02
+        },
+        "constraint_tolerance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1e-07
+        },
+        "constraint_max_iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 200
         }
       }
     },
     "outputs": {
       "type": "array",
-      "items": {"enum": ["tip_trajectory", "inserted_length", "metrics"]},
+      "items": {
+        "enum": [
+          "tip_trajectory",
+          "insertion_depth",
+          "insertion_force",
+          "metrics"
+        ]
+      },
       "uniqueItems": true
     }
   },
   "$defs": {
     "fileRef": {
       "type": "object",
-      "required": ["file"],
+      "required": [
+        "file"
+      ],
       "additionalProperties": false,
       "properties": {
-        "file": {"type": "string", "description": "Path relative to the case file, or a URL."},
-        "doi": {"type": "string"},
-        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "file": {
+          "type": "string",
+          "description": "Path relative to the case file, or a URL."
+        },
+        "doi": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
         "transform": {
-          "type": "array", "items": {"type": "number"}, "minItems": 16, "maxItems": 16,
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 16,
+          "maxItems": 16,
           "description": "Row-major 4x4 rigid transform from the file frame to the anatomy frame."
         }
       }

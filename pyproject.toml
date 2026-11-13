@@ -48,7 +48,10 @@ auris_sim = ["schemas/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["sofa: needs SOFA, SofaPython3 and BeamAdapter (skipped otherwise)"]
+markers = [
+    "sofa: needs SOFA, SofaPython3 and the Cosserat plugin (skipped otherwise)",
+    "slow: longer SOFA runs (a few seconds)",
+]
 
 [tool.ruff]
 line-length = 100

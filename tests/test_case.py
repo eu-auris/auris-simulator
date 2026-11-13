@@ -18,10 +18,11 @@ def test_example_case_is_valid(example_case_path):
 def test_defaults_are_filled(example_case_path):
     raw = load_yaml(example_case_path.read_text())
     del raw["contact"]
-    del raw["instrument"]["n_beams"]
+    del raw["instrument"]["n_sections"]
     data = validate_case(raw)
     assert data["contact"]["friction"] == pytest.approx(0.1)
-    assert data["instrument"]["n_beams"] == 30
+    assert data["instrument"]["n_sections"] == 40
+    assert data["strategy"]["entry_offset"] == pytest.approx(3e-4)
 
 
 @pytest.mark.parametrize(
@@ -32,7 +33,11 @@ def test_defaults_are_filled(example_case_path):
         (lambda d: d["strategy"].update(insertion_speed=-1), "strategy/insertion_speed"),
         (lambda d: d.update(typo=1), "typo"),
         (lambda d: d["strategy"].update(insertion_depth=1.0), "insertion_depth"),
-        (lambda d: d["instrument"]["diameter"].update(tip=1e-2), "tip is larger"),
+        (lambda d: d["instrument"].update(model="beam"), "instrument/model"),
+        (
+            lambda d: d["instrument"].update(sections=[{"length": 0.01, "young_modulus": 1e8}] * 2),
+            "add up to",
+        ),
     ],
 )
 def test_invalid_cases(example_case_path, mutate, message):
@@ -46,3 +51,12 @@ def test_yaml_scientific_notation_is_float():
     data = load_yaml("a: 1.0e7\nb: 1e-3\nc: 2.5\nd: '1e3'\ne: 12\n")
     assert data == {"a": 1.0e7, "b": 1e-3, "c": 2.5, "d": "1e3", "e": 12}
     assert isinstance(data["e"], int)
+
+
+def test_explicit_sections_are_accepted(example_case_path):
+    raw = load_yaml(example_case_path.read_text())
+    raw["instrument"]["sections"] = [
+        {"length": 0.015, "young_modulus": 2e8},
+        {"length": 0.010, "young_modulus": 5e7, "poisson_ratio": 0.4},
+    ]
+    assert len(validate_case(raw)["instrument"]["sections"]) == 2

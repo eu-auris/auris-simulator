@@ -125,8 +125,14 @@ def _check_consistency(data: dict) -> None:
             "invalid case:\n- strategy/insertion_depth: larger than instrument/length "
             f"({strat['insertion_depth']} > {instr['length']})"
         )
-    if instr["diameter"]["tip"] > instr["diameter"]["base"]:
-        raise CaseError("invalid case:\n- instrument/diameter: tip is larger than base")
+    sections = instr.get("sections")
+    if sections:
+        total = sum(s["length"] for s in sections)
+        if abs(total - instr["length"]) > 1e-9 + 1e-6 * instr["length"]:
+            raise CaseError(
+                "invalid case:\n- instrument/sections: section lengths add up to "
+                f"{total}, not instrument/length = {instr['length']}"
+            )
 
 
 def load_case(path: str | Path) -> Case:

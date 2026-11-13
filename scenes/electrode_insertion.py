@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Example scene: electrode-array insertion into a synthetic spiral duct.
 
+Needs SOFA (master, or v26.12 and later), SofaPython3 and the Cosserat plugin.
+
 With the GUI (needs ``pip install -e .`` in the Python used by SOFA)::
 
     runSofa scenes/electrode_insertion.py
@@ -40,7 +42,7 @@ def run_headless(case_path: Path, steps: int | None, outdir: Path) -> Path:
 
     case = load_case(case_path)
     root = Sofa.Core.Node("root")
-    monitor = create_insertion_scene(root, case)
+    monitor = create_insertion_scene(root, case, gui=False)
     Sofa.Simulation.init(root)
     n = steps or int(round(case["simulation"]["duration"] / case["simulation"]["dt"]))
     for _ in range(n):

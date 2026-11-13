@@ -9,9 +9,9 @@ Graded training path (see the design note, section 2.5). Status in brackets.
 
 1. Load and display a synthetic cochlea-like duct (rigid). *[available through
    `scenes/electrode_insertion.py`]*
-2. Insert a straight electrode array (BeamAdapter) at constant speed and read the recorded
-   tip trajectory and angular insertion depth. *[available through `scenes/electrode_insertion.py`;
-   insertion force: to do]*
+2. Insert an electrode array (Cosserat rod) at constant speed and read the recorded insertion
+   force, tip trajectory and angular insertion depth. *[available through
+   `scenes/electrode_insertion.py`]*
 3. Contact and friction: effect of the friction coefficient and of the insertion speed. *[to do]*
 4. Change the insertion strategy and compare metrics. *[to do]*
 5. Robotic instrument (SoftRobots actuation). *[to do]*

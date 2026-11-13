@@ -28,4 +28,19 @@
 #     sha256: TODO
 #     tags: [mesh, phantom]
 
-datasets: []
+datasets:
+  # Not public: kept outside the repository until the rights holders agree (design note, §1.2 and §8).
+  - id: electrode-array-profile-calibrated
+    title: Section profile of a commercial electrode array (section lengths, moduli), calibrated on insertion-force measurements
+    producer: TODO
+    access: restricted
+    licence: TBD
+    access_procedure: Not public. Ask the maintainers (MAINTAINERS.md); use it through a case file kept outside the repository.
+    tags: [instrument, cosserat, calibration]
+  - id: cochlea-specimen-meshes
+    title: Segmented cochlea surface meshes (specimen-derived) used for insertion simulations
+    producer: TODO
+    access: restricted
+    licence: TBD
+    access_procedure: Not public. Origin, consent and sharing conditions to be documented before any release.
+    tags: [mesh, cochlea, specimen]
