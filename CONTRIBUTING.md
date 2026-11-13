@@ -49,7 +49,7 @@ before the first public release.
 python -m pip install -e ".[dev,docs]"
 ruff check .
 python -m pytest -m "not sofa"        # without SOFA
-python -m pytest                      # with SOFA + SofaPython3 + BeamAdapter available
+python -m pytest                      # with SOFA + SofaPython3 + Cosserat available
 reuse lint
 mkdocs serve                          # documentation preview
 ```

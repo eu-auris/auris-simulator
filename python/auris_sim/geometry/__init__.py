@@ -6,8 +6,16 @@ from auris_sim.geometry.spiral import (
     SpiralDuct,
     TriangleMesh,
     entry_pose,
+    insertion_frame,
     spiral_duct,
     write_stl,
 )
 
-__all__ = ["SpiralDuct", "TriangleMesh", "entry_pose", "spiral_duct", "write_stl"]
+__all__ = [
+    "SpiralDuct",
+    "TriangleMesh",
+    "entry_pose",
+    "insertion_frame",
+    "spiral_duct",
+    "write_stl",
+]

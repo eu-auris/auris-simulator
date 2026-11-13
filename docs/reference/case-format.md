@@ -30,10 +30,10 @@ Schema `python/auris_sim/schemas/case.schema.json`.
 | `schema_version` | `"0.1"` |
 | `units` | Must be SI |
 | `anatomy` | `id`, `frame`, and a `source`: either `synthetic` (generator `spiral_duct` and its parameters) or `files` (named meshes) |
-| `instrument` | `electrode_array` modelled as a `beam`: length, base and tip diameters, Young's modulus, Poisson ratio, density, number of beams |
-| `strategy` | Insertion speed and target insertion depth |
+| `instrument` | `electrode_array` modelled as a `cosserat` rod: length, radius, Young's modulus, Poisson ratio, density, and either `n_sections` uniform sections or an explicit `sections` list (length, modulus, Poisson ratio per section) |
+| `strategy` | Insertion speed, target depth of the tip beyond the entrance, initial tip-to-entrance distance |
 | `contact` | Friction coefficient, alarm and contact distances |
-| `simulation` | Time step, duration, gravity |
+| `simulation` | Time step, duration, gravity, Rayleigh damping, constraint-solver tolerance and iterations |
 | `outputs` | Requested outputs |
 
 ## Example

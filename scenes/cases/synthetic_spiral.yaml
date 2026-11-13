@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2026 AURIS simulator contributors
 # SPDX-License-Identifier: CC-BY-4.0
 #
-# Example case: straight electrode array inserted into a synthetic spiral duct.
+# Example case: electrode array (Cosserat rod) inserted into a synthetic spiral duct.
 # ALL NUMERICAL VALUES ARE ILLUSTRATIVE PLACEHOLDERS, not anatomical or device data.
+# Calibrated device profiles and specimen meshes are not stored here (see data/registry.yaml).
 schema_version: "0.1"
 description: Teaching example on a synthetic cochlea-like duct (not anatomical).
 units: {length: m, mass: kg, time: s, force: N, pressure: Pa}
@@ -23,27 +24,27 @@ anatomy:
 
 instrument:
   type: electrode_array
-  model: beam            # BeamAdapter
+  model: cosserat        # frame-primary Cosserat rod (Frames2StrainCosseratMapping)
   length: 0.025
-  diameter: {base: 0.8e-3, tip: 0.4e-3}
-  tip_fraction: 0.3
-  young_modulus: 1.0e7
+  radius: 0.3e-3
+  n_sections: 40         # uniform sections; or give an explicit "sections:" list
+  young_modulus: 1.0e8
   poisson_ratio: 0.45
-  density: 1500
-  n_beams: 30
+  density: 1100
 
 strategy:
   insertion_speed: 1.0e-3   # m/s
-  insertion_depth: 0.020    # m
+  insertion_depth: 0.020    # m, tip depth beyond the entrance
+  entry_offset: 3.0e-4      # m, tip-to-entrance distance at the start
 
 contact:
   friction: 0.1
-  alarm_distance: 3.0e-4
+  alarm_distance: 2.0e-4
   contact_distance: 5.0e-5
 
 simulation:
   dt: 0.01
-  duration: 25.0
+  duration: 21.0
   gravity: [0, 0, 0]
 
-outputs: [tip_trajectory, inserted_length, metrics]
+outputs: [tip_trajectory, insertion_depth, insertion_force, metrics]

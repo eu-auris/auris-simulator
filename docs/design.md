@@ -41,7 +41,9 @@ Decisions taken so far (2026-11-12):
 |---|---|---|
 | GitHub hosting | A **new GitHub organisation dedicated to AURIS**: [`eu-auris`](https://github.com/eu-auris), repository `eu-auris/auris-simulator` | Owners (see §2.1) |
 | Code licence | **LGPL-2.1-or-later** (same as SOFA) | Inria IP / technology-transfer office; consortium agreement |
-| SOFA version | CI on the **latest stable release, pinned (v26.06.00 today)**, plus a **non-blocking job on SOFA `master`** | — |
+| SOFA version | Blocking CI on **SOFA `master` + Cosserat `main` pinned to a commit** (the implant model needs `Frames2StrainCosseratMapping`, not in Cosserat v26.06), plus a weekly non-blocking job on unpinned `master`/`main`. Switch to the **v26.12** releases when they are out (decision of 2026-11-13) | Check that Cosserat v26.12 contains Frames2Strain |
+| Implant model | **Cosserat plugin** only (frame-primary rod, `Frames2StrainCosseratMapping` + `BeamHookeLawForceField`); BeamAdapter is not used (decision of 2026-11-13) | — |
+| Device and specimen data | Calibrated electrode-array section profiles and specimen-derived cochlea meshes stay **out of the repository** (restricted entries in `data/registry.yaml`) | Agreement of the rights holders before any publication |
 | Partners, DC dates, supervisors | Not provided yet | All marked **TODO** |
 
 ---
@@ -68,8 +70,8 @@ Working definition, to be refined with DC15 and their supervisors:
 - **A Python package** (`auris_sim`) that builds SofaPython3 scenes from parameter files, computes metrics, runs benchmarks and talks to the DC14 digital twin.
 - **Dependencies on existing SOFA plugins:**
   - [SofaPython3](https://github.com/sofa-framework/SofaPython3): scenes and scripting.
-  - [BeamAdapter](https://github.com/sofa-framework/BeamAdapter): slender instruments modelled as beams (e.g. the electrode array, catheter-like insertion tools, guided insertion with `InterventionalRadiologyController`).
-  - [SoftRobots](https://github.com/SofaDefrost/SoftRobots): actuation of soft or continuum robotic instruments (cables, pressure, …).
+  - [Cosserat](https://github.com/SofaDefrost/Cosserat) (LGPL-3.0): the electrode array (and other slender instruments) as a Cosserat rod. The simulator uses the *frame-primary* formulation: the degrees of freedom are the poses of the section boundaries, the strains are derived by `Frames2StrainCosseratMapping`, with one `BeamHookeLawForceField` per section, so that non-uniform sections (soft parts and electrode rings), clamping on a guide, contacts and cable forces apply directly to the frames.
+  - [SoftRobots](https://github.com/SofaDefrost/SoftRobots): actuation of soft or continuum robotic instruments (cables / tendons, pressure, …), e.g. an actuated implant.
   - *Optional:* SoftRobots.Inverse for inverse (control) problems. **Check its licence first:** it is not under the same licence as SOFA, so it must not become a hard dependency until compatibility is confirmed.
 - **Example scenes and tutorials** for training.
 - **A benchmark protocol** (§4.4) for comparing instruments and insertion strategies.
@@ -86,6 +88,7 @@ The DC15 description in the proposal should answer this; it is not in the text q
 - No patient-derived data of any kind (images, segmentations, meshes extracted from patient scans), even pseudonymised.
 - No large files (rule of thumb: nothing above ~5 MB; no Git LFS for research data).
 - No data whose licence or consent status is unclear.
+- No calibrated parameters of a commercial device (e.g. section lengths and moduli of an electrode array identified against force measurements) unless the rights holders agree: they are passed to the simulator through a case file kept outside the repository.
 
 The repository only holds:
 
@@ -112,7 +115,7 @@ identity, but if nobody owns it after the network ends, it can become orphaned. 
 
 ### 2.2 Licence
 
-- **Code:** LGPL-2.1-or-later, same as SOFA, BeamAdapter and SoftRobots. This lets other people link the plugin from their own code without imposing a licence on it, while modifications to the simulator itself stay open.
+- **Code:** LGPL-2.1-or-later, same as SOFA and SoftRobots. This lets other people link the plugin from their own code without imposing a licence on it, while modifications to the simulator itself stay open. Cosserat is under LGPL-3.0: this is compatible ("or later" allows LGPL-3.0), and a distribution that bundles both is covered by LGPL-3.0.
 - **Documentation, tutorials, synthetic models:** CC-BY-4.0.
 <!-- REUSE-IgnoreStart -->
 - **Each file** carries an SPDX header (`SPDX-License-Identifier: LGPL-2.1-or-later`), following the [REUSE](https://reuse.software) convention, which can be checked in CI.
@@ -124,9 +127,9 @@ identity, but if nobody owns it after the network ends, it can become orphaned. 
 
 ### 2.3 Continuous integration (GitHub Actions)
 
-- **Blocking job:** build the plugin against the latest **stable SOFA release, pinned** (today `v26.06.00`), using the official [`sofa-framework/sofa-setup-action`](https://github.com/sofa-framework/sofa-setup-action) (v5), which downloads the SOFA release binaries (including SofaPython3) from GitHub. Start with Ubuntu; add macOS and Windows once the build is stable.
-- **Non-blocking job** (scheduled weekly, plus manual trigger): same build on SOFA `master`, to detect API changes early. It is a separate workflow, so its failures never block pull requests.
-- **Dependencies:** BeamAdapter and SoftRobots are built from source in CI, at tags or commits that are compatible with the pinned SOFA release; their commit SHAs are pinned in the workflow.
+- **Blocking job:** install SOFA with the official [`sofa-framework/sofa-setup-action`](https://github.com/sofa-framework/sofa-setup-action) (v5, binaries including SofaPython3), build Cosserat from source at a **pinned commit**, build the plugin and run the scene tests. Because the implant model needs `Frames2StrainCosseratMapping` (Cosserat `main`, not in the v26.06 release branch), this job uses **SOFA `master`** until SOFA v26.12 is released; then SOFA and Cosserat are both pinned to v26.12, and to each later release. Start with Ubuntu; add macOS and Windows once the build is stable.
+- **Non-blocking job** (scheduled weekly, plus manual trigger): same build on SOFA `master` and **unpinned** Cosserat `main`, to detect API changes early. It is a separate workflow, so its failures never block pull requests.
+- **Dependencies:** Cosserat (and later SoftRobots) are built from source in CI, at commits compatible with the SOFA version used; their commit SHAs are pinned in the workflow.
 - **Tests:**
   - pure-Python unit tests (parameter parsing, metrics, geometry generation), which run **without** SOFA (fast, on every push);
   - scene smoke tests: load each example scene and run *N* time steps headless; check that it does not diverge and that the metrics are produced;
@@ -145,7 +148,7 @@ identity, but if nobody owns it after the network ends, it can become orphaned. 
 A graded path for students, surgeons-in-training and engineers:
 
 1. Load and display a synthetic cochlea-like duct (rigid).
-2. Insert a straight electrode array modelled with BeamAdapter, at constant speed; plot the insertion force.
+2. Insert an electrode array modelled as a Cosserat rod, at constant speed; plot the insertion force.
 3. Contact and friction: effect of the friction coefficient and of the insertion speed.
 4. Change the insertion strategy (angle, speed profile, advance-off-stylet, …) and compare the metrics.
 5. Robotic instrument (SoftRobots-based actuation).
@@ -304,13 +307,16 @@ anatomy:
     scala_tympani_wall: {file: st_wall.stl, sha256: "<...>"}
 instrument:
   type: electrode_array
-  model: beam                       # BeamAdapter
+  model: cosserat                   # Cosserat rod (Frames2Strain)
   length: 0.025                     # placeholder
-  diameter: {base: 0.0008, tip: 0.0004}   # placeholders
-  young_modulus: 1.0e7              # placeholder
+  radius: 0.0003                    # placeholder
+  young_modulus: 1.0e8              # placeholder (uniform sections)
+  sections:                         # optional: explicit non-uniform profile
+    - {length: 0.0012, young_modulus: 3.0e8}
+    - ...
 strategy:
   insertion_speed: 0.001            # m/s, placeholder
-  insertion_axis: {origin: [0, 0, 0], direction: [0, 0, 1]}
+  insertion_depth: 0.020            # m, tip depth beyond the entrance
 contact:
   friction: 0.1                     # placeholder
 simulation:
@@ -401,8 +407,8 @@ expressed relative to the **DC15 start (month M0)**, and also relative to SOFA r
 
 | Phase | When | Content | Exit criterion |
 |---|---|---|---|
-| 0. Foundations | Now → DC15 M0 | This design note; repository skeleton; CI; docs site; licence confirmed; AURIS org created | CI green on SOFA v26.06; docs online |
-| 1. Baseline simulator | M0 → M6 | Synthetic cochlea-like geometry; BeamAdapter electrode insertion; contact/friction; first metrics; tutorials 1–3 | First release `v0.1.0` + Zenodo DOI |
+| 0. Foundations | Now → DC15 M0 | This design note; repository skeleton; CI; docs site; licence confirmed; AURIS org created | CI green on SOFA master + pinned Cosserat, then on v26.12; docs online |
+| 1. Baseline simulator | M0 → M6 | Synthetic cochlea-like geometry; Cosserat electrode insertion with guide; contact/friction; insertion force and first metrics; tutorials 1–3 | First release `v0.1.0` + Zenodo DOI |
 | 2. Digital-twin interface v1 | M6 → M18 | `case.yaml` schema agreed with DC14; first real (derived, shareable) anatomies; benchmark v1; tutorials 4–6 | Release `v0.x` with benchmark v1; HAL deposit |
 | 3. Hybrid simulation and robotics | M18 → M30 | "Hybrid" features (TODO definition); robotic instruments (SoftRobots); validation against experimental data | Validation report; publication(s) |
 | 4. Consolidation and training | M30 → end of DC15 | Training material for network events; stable API; final benchmark results | Release `v1.0.0`; SWHID + HAL; maintenance plan agreed |
@@ -451,6 +457,8 @@ release (June/December).
 - [ ] Contribution policy: DCO or CLA (§2.2).
 - [ ] Copyright holder(s) in SPDX headers: the skeleton uses "AURIS simulator contributors"; Inria's IP office may require e.g. "Inria" or the joint DEFROST partners (§2.2).
 - [ ] Licence of SoftRobots.Inverse, if needed (§1.1).
+- [ ] Switch the blocking CI to SOFA v26.12 + Cosserat v26.12 when released, after checking that Cosserat v26.12 contains `Frames2StrainCosseratMapping` (§2.3).
+- [ ] Agreement of the rights holders before publishing the calibrated electrode-array profile and the specimen-derived cochlea meshes (§1.2, §3).
 - [ ] Mirror on `gitlab.inria.fr`: yes or no (§2.1).
 - [ ] Post-project maintenance level and duration (§2.8).
 - [ ] Unit system and cochlear coordinate frame, with DC14 (§4.2).

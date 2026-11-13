@@ -36,11 +36,12 @@ jobs:
       - name: Unit tests
         run: python -m pytest -m "not sofa"
 
-  sofa-release:
-    name: SOFA release
+  sofa:
+    name: SOFA + Cosserat
     uses: ./.github/workflows/sofa-build.yml
     with:
-      # Pinned SOFA release. Update twice a year, after each SOFA release (June/December),
-      # together with the BeamAdapter commit (head of its matching release branch).
-      sofa_version: v26.06.00
-      beamadapter_ref: 5290893fd149b57045921aa37d5911bc47ef80cd  # BeamAdapter branch v26.06
+      # The implant model needs Frames2StrainCosseratMapping, which is on Cosserat main but
+      # not in the v26.06 release branch. Until SOFA v26.12 is out, build against SOFA master
+      # with Cosserat pinned to a known commit; then pin both to v26.12 (and update twice a year).
+      sofa_version: master
+      cosserat_ref: fa71b1b0bffa9038358dbb7a380e5a0e2c43683a  # Cosserat main, 2026-11-04

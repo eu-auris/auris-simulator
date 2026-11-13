@@ -146,6 +146,24 @@ def entry_pose(params: SpiralDuct | None = None, offset: float = 1.0e-3):
     return position, direction
 
 
+def insertion_frame(params: SpiralDuct | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """Rigid placement that brings the duct entrance onto the insertion axis.
+
+    Returns ``(rotation, centre)``: a point ``p`` of the anatomy frame goes to
+    ``(p - centre) @ rotation.T`` in a frame where the entrance is at the origin,
+    the duct starts along +x (the insertion direction) and the spiral axis stays
+    as close as possible to +z.
+    """
+    params = params or SpiralDuct()
+    points, _ = centerline(params)
+    ex = _tangents(points)[0]
+    z = np.array([0.0, 0.0, 1.0])
+    ez = z - np.dot(z, ex) * ex
+    ez /= np.linalg.norm(ez)
+    ey = np.cross(ez, ex)
+    return np.vstack([ex, ey, ez]), points[0].copy()
+
+
 def write_stl(path: str | Path, mesh: TriangleMesh, name: str = "auris_sim") -> Path:
     """Write ``mesh`` as a binary STL file (no units: they are given by the caller)."""
     path = Path(path)

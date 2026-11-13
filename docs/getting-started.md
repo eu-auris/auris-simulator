@@ -7,15 +7,16 @@ SPDX-License-Identifier: CC-BY-4.0
 
 ## 1. Install SOFA
 
-Download SOFA **v26.06** from the
-[SOFA releases page](https://github.com/sofa-framework/sofa/releases) (the binaries include
-SofaPython3). The [BeamAdapter](https://github.com/sofa-framework/BeamAdapter) plugin is also
-needed; build it from its `v26.06` branch if your SOFA package does not include it.
+The electrode array is simulated with the [Cosserat](https://github.com/SofaDefrost/Cosserat)
+plugin, using `Frames2StrainCosseratMapping`. This mapping is on Cosserat's `main` branch but not
+in its v26.06 release, so for now you need **SOFA master** (nightly binaries, or a build from
+source with SofaPython3) and **Cosserat built from `main`** (the CI uses the commit pinned in
+`.github/workflows/ci.yml`). From SOFA v26.12 on, the release binaries should be enough.
 
 Set `SOFA_ROOT` to the SOFA directory, and make SofaPython3 visible to Python:
 
 ```bash
-export SOFA_ROOT=/path/to/SOFA_v26.06.00
+export SOFA_ROOT=/path/to/sofa
 export PYTHONPATH="$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages:$PYTHONPATH"
 ```
 

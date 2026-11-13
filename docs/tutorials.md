@@ -11,7 +11,7 @@ A graded training path for students, surgeons-in-training and engineers. Tutoria
 | # | Topic | Status |
 |---|---|---|
 | 1 | Load and display a synthetic cochlea-like duct | Example scene available |
-| 2 | Insert an electrode array (BeamAdapter); read the tip trajectory and angular depth | Example scene available; insertion force to do |
+| 2 | Insert an electrode array (Cosserat rod); read the insertion force, tip trajectory and angular depth | Example scene available |
 | 3 | Contact and friction: effect of friction and insertion speed | To do |
 | 4 | Change the insertion strategy and compare metrics | To do |
 | 5 | Robotic instrument (SoftRobots) | To do |
