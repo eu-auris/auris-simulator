@@ -2,8 +2,11 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Scene smoke tests: build the example scene and run it headless.
 
-Skipped when SOFA (with SofaPython3) is not importable. Needs the Cosserat plugin.
+Skipped when SOFA (with SofaPython3) is not importable, unless AURIS_REQUIRE_SOFA=1
+(set in CI), in which case a missing SOFA is an error. Needs the Cosserat plugin.
 """
+
+import os
 
 import numpy as np
 import pytest
@@ -12,8 +15,12 @@ from auris_sim.io import load_case
 
 pytestmark = pytest.mark.sofa
 
-Sofa = pytest.importorskip("Sofa")
-pytest.importorskip("Sofa.Simulation")
+if os.environ.get("AURIS_REQUIRE_SOFA") == "1":
+    import Sofa
+    import Sofa.Simulation
+else:
+    Sofa = pytest.importorskip("Sofa")
+    pytest.importorskip("Sofa.Simulation")
 
 
 def _run(case, steps):
